@@ -39,7 +39,7 @@ def contar_registros_estados(archivo):
         return 0, 0, 0
 
 # Título del programa
-st.title("OASIS <Productividad>")
+st.title("OASIS")
 
 # Mostrar resultados para cada archivo
 for archivo, encabezado in ARCHIVOS.items():
