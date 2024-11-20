@@ -17,10 +17,10 @@ if input_password != PASSWORD:
 
 # Nombres de los archivos y sus respectivos encabezados
 ARCHIVOS = {
-    "registro_convocatorias.csv": "Área: Convocatorias",
-    "registro_analisis.csv": "Área: Análisis Estadístico",
-    "registro_protocolos.csv": "Área: Protocolos",
-    "registro_correccion.csv": "Área: Corrección de Estilo"
+    "registro_convocatorias.csv": "Convocatorias",
+    "registro_analisis.csv": "Análisis Estadístico",
+    "registro_protocolos.csv": "Protocolos",
+    "registro_correccion.csv": "Corrección de Estilo"
 }
 
 def contar_registros_estados(archivo):
