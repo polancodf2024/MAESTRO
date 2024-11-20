@@ -2,6 +2,19 @@ import streamlit as st
 import pandas as pd
 import os
 
+
+# Solicitar contraseña al inicio
+PASSWORD = "Tt5plco5"
+input_password = st.text_input("Ingresa la contraseña para acceder:", type="password")
+
+# Verificar la contraseña
+if input_password != PASSWORD:
+    st.error("Escribe la contraseña correcta, y presiona ENTER.")
+
+    st.stop()
+
+
+
 # Nombres de los archivos y sus respectivos encabezados
 ARCHIVOS = {
     "registro_convocatorias.csv": "Área: Convocatorias",
