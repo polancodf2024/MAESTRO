@@ -16,7 +16,7 @@ SMTP_PORT = 587
 EMAIL_USER = "abcdf2024dfabc@gmail.com"
 EMAIL_PASSWORD = "hjdd gqaw vvpj hbsy"
 NOTIFICATION_EMAIL = "polanco@unam.mx"
-CSV_CONVOCATORIAS_FILE = "registro_convocatorias.csv"
+CSV_CONVOCATORIAS_FILE = "/mount/src/maestro/registro_convocatorias.csv"
 
 # Selección de idioma
 idioma = st.sidebar.selectbox("Idioma", ["Español", "English"], index=0)
