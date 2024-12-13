@@ -43,16 +43,20 @@ setup_database()
 
 # Función para registrar en la base de datos
 def registrar_transaccion(nombre, email, numero_economico, file_name, servicios):
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    servicios_str = ", ".join(servicios)
-    cursor.execute("""
-    INSERT INTO registro (fecha_hora, nombre, email, numero_economico, file_name, servicios)
-    VALUES (?, ?, ?, ?, ?, ?)
-    """, (fecha_hora, nombre, email, numero_economico, file_name, servicios_str))
-    conn.commit()
-    conn.close()
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        servicios_str = ", ".join(servicios)
+        cursor.execute("""
+        INSERT INTO registro (fecha_hora, nombre, email, numero_economico, file_name, servicios)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """, (fecha_hora, nombre, email, numero_economico, file_name, servicios_str))
+        conn.commit()
+    except sqlite3.Error as e:
+        st.error(f"Error al registrar en la base de datos: {e}")
+    finally:
+        conn.close()
 
 # Función para enviar confirmación al usuario
 def send_confirmation(email_usuario, nombre_usuario, servicios, idioma):
@@ -69,11 +73,14 @@ def send_confirmation(email_usuario, nombre_usuario, servicios, idioma):
     )
     mensaje.attach(MIMEText(cuerpo, 'plain'))
 
-    context = ssl.create_default_context()
-    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-        server.starttls(context=context)
-        server.login(EMAIL_USER, EMAIL_PASSWORD)
-        server.sendmail(EMAIL_USER, email_usuario, mensaje.as_string())
+    try:
+        context = ssl.create_default_context()
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls(context=context)
+            server.login(EMAIL_USER, EMAIL_PASSWORD)
+            server.sendmail(EMAIL_USER, email_usuario, mensaje.as_string())
+    except Exception as e:
+        st.error(f"Error al enviar confirmación: {e}")
 
 # Función para enviar el archivo al administrador
 def send_files_to_admin(file_data, file_name, servicios):
@@ -96,11 +103,14 @@ def send_files_to_admin(file_data, file_name, servicios):
     part.add_header("Content-Disposition", f"attachment; filename={file_name}")
     mensaje.attach(part)
 
-    context = ssl.create_default_context()
-    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-        server.starttls(context=context)
-        server.login(EMAIL_USER, EMAIL_PASSWORD)
-        server.sendmail(EMAIL_USER, NOTIFICATION_EMAIL, mensaje.as_string())
+    try:
+        context = ssl.create_default_context()
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls(context=context)
+            server.login(EMAIL_USER, EMAIL_PASSWORD)
+            server.sendmail(EMAIL_USER, NOTIFICATION_EMAIL, mensaje.as_string())
+    except Exception as e:
+        st.error(f"Error al enviar el archivo al administrador: {e}")
 
 # Añadir el logo y el título
 st.image("escudo_COLOR.jpg", width=100)
