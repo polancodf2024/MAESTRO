@@ -110,7 +110,7 @@ def descargar_csv():
             st.download_button(
                 label="Descargar registro_convocatorias.csv",
                 data=file,
-                file_name="/mount/src/maestro/registro_convocatorias.csv",
+                file_name="registro_convocatorias.csv",
                 mime="text/csv"
             )
     else:
