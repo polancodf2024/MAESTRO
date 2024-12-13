@@ -14,7 +14,7 @@ SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 EMAIL_USER = "abcdf2024dfabc@gmail.com"
 EMAIL_PASSWORD = "hjdd gqaw vvpj hbsy"
-CSV_FILE = "/mount/src/maestro/registro_convocatorias.csv"
+CSV_FILE = "registro_convocatorias.csv"
 
 
 # Solicitar contraseña al inicio
