@@ -20,7 +20,7 @@ EMAIL_USER = "abcdf2024dfabc@gmail.com"
 EMAIL_PASSWORD = "hjdd gqaw vvpj hbsy"
 NOTIFICATION_EMAIL = "polanco@unam.mx"
 GITHUB_REPO_URL = "https://api.github.com/repos/polancodf2024/MAESTRO/contents/registro_correccion.sqlite"
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")  # Token tomado de las variables de entorno
+GITHUB_TOKEN = "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"  # Token explícito
 LOCAL_DB_FILE = "registro_correccion.sqlite"
 
 # Descargar base de datos desde GitHub
