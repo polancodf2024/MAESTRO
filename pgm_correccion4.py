@@ -20,79 +20,79 @@ EMAIL_USER = "abcdf2024dfabc@gmail.com"
 EMAIL_PASSWORD = "hjdd gqaw vvpj hbsy"
 NOTIFICATION_EMAIL = "polanco@unam.mx"
 GITHUB_REPO_URL = "https://api.github.com/repos/polancodf2024/MAESTRO/contents/registro_correccion.sqlite"
-GITHUB_TOKEN = "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"
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")  # Token tomado de las variables de entorno
 LOCAL_DB_FILE = "registro_correccion.sqlite"
 
 # Descargar base de datos desde GitHub
 def descargar_base_datos():
-    if not os.path.exists(LOCAL_DB_FILE):
-        headers = {"Authorization": f"token {GITHUB_TOKEN}"}
-        response = requests.get(GITHUB_REPO_URL, headers=headers)
-        if response.status_code == 200:
-            content = base64.b64decode(response.json()["content"])
-            with open(LOCAL_DB_FILE, "wb") as f:
-                f.write(content)
-            print("Base de datos descargada con éxito desde GitHub.")
-        else:
-            st.error(f"Error al descargar la base de datos: {response.status_code}")
+    try:
+        if not os.path.exists(LOCAL_DB_FILE):
+            headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+            response = requests.get(GITHUB_REPO_URL, headers=headers)
+            if response.status_code == 200:
+                content = base64.b64decode(response.json().get("content", ""))
+                with open(LOCAL_DB_FILE, "wb") as f:
+                    f.write(content)
+                st.write("Base de datos descargada con éxito.")
+            else:
+                st.error(f"Error al descargar la base de datos: {response.status_code} - {response.text}")
+    except Exception as e:
+        st.error(f"Error inesperado al descargar la base de datos: {e}")
 
 # Subir base de datos actualizada a GitHub
 def subir_base_datos():
-    with open(LOCAL_DB_FILE, "rb") as f:
-        content = base64.b64encode(f.read()).decode("utf-8")
+    try:
+        with open(LOCAL_DB_FILE, "rb") as f:
+            content = base64.b64encode(f.read()).decode("utf-8")
 
-    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+        headers = {"Authorization": f"token {GITHUB_TOKEN}"}
 
-    # Obtener SHA del archivo existente
-    response = requests.get(GITHUB_REPO_URL, headers=headers)
-    if response.status_code == 200:
-        sha = response.json()["sha"]
-    else:
-        sha = None
+        # Obtener SHA
+        response = requests.get(GITHUB_REPO_URL, headers=headers)
+        sha = response.json().get("sha") if response.status_code == 200 else None
 
-    # Subir archivo
-    data = {
-        "message": "Actualizar base de datos",
-        "content": content,
-        "sha": sha
-    }
-    response = requests.put(GITHUB_REPO_URL, headers=headers, json=data)
-    if response.status_code in [200, 201]:
-        print("Base de datos subida con éxito a GitHub.")
-    else:
-        st.error(f"Error al subir la base de datos: {response.status_code}")
+        # Subir archivo
+        data = {"message": "Actualizar base de datos", "content": content, "sha": sha}
+        response = requests.put(GITHUB_REPO_URL, headers=headers, json=data)
+
+        if response.status_code in [200, 201]:
+            st.write("Base de datos subida con éxito.")
+        else:
+            st.error(f"Error al subir la base de datos: {response.status_code} - {response.text}")
+    except Exception as e:
+        st.error(f"Error inesperado al subir la base de datos: {e}")
 
 # Crear base de datos y tabla si no existen
 def setup_database():
-    conn = sqlite3.connect(LOCAL_DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS registro_correccion (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        fecha_hora TEXT NOT NULL,
-        nombre TEXT NOT NULL,
-        email TEXT NOT NULL,
-        numero_economico TEXT NOT NULL,
-        file_name TEXT NOT NULL,
-        servicios TEXT NOT NULL,
-        estado TEXT DEFAULT 'Activo',
-        fecha_terminacion TEXT
-    )
-    """)
-    conn.commit()
-    conn.close()
-
-setup_database()
-
-descargar_base_datos()
+    try:
+        conn = sqlite3.connect(LOCAL_DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS registro_correccion (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fecha_hora TEXT NOT NULL,
+            nombre TEXT NOT NULL,
+            email TEXT NOT NULL,
+            numero_economico TEXT NOT NULL,
+            file_name TEXT NOT NULL,
+            servicios TEXT NOT NULL,
+            estado TEXT DEFAULT 'Activo',
+            fecha_terminacion TEXT
+        )
+        """)
+        conn.commit()
+        conn.close()
+        st.write("Base de datos configurada correctamente.")
+    except Exception as e:
+        st.error(f"Error al configurar la base de datos: {e}")
 
 # Función para registrar en la base de datos
 def guardar_registro_sqlite(nombre, email, numero_economico, file_name, servicios):
-    tz_mexico = pytz.timezone("America/Mexico_City")
-    fecha_hora = datetime.now(tz_mexico).strftime("%Y-%m-%d %H:%M:%S")
-    servicios_str = ", ".join(servicios)
-
     try:
+        tz_mexico = pytz.timezone("America/Mexico_City")
+        fecha_hora = datetime.now(tz_mexico).strftime("%Y-%m-%d %H:%M:%S")
+        servicios_str = ", ".join(servicios)
+
         conn = sqlite3.connect(LOCAL_DB_FILE)
         cursor = conn.cursor()
         cursor.execute("""
@@ -101,6 +101,7 @@ def guardar_registro_sqlite(nombre, email, numero_economico, file_name, servicio
         """, (fecha_hora, nombre, email, numero_economico, file_name, servicios_str))
         conn.commit()
         conn.close()
+        st.write("Registro guardado en la base de datos.")
     except Exception as e:
         st.error(f"Error al guardar el registro en la base de datos: {e}")
 
@@ -134,9 +135,6 @@ def send_to_admin_with_files(user_file_data, user_file_name):
 # Función para enviar confirmación al usuario
 def send_confirmation(email, nombre, servicios, user_file_data, user_file_name):
     try:
-        # Determinar el tipo MIME según la extensión del archivo
-        mime_type = "application/vnd.ms-word" if user_file_name.endswith(".doc") else "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-
         mensaje = MIMEMultipart()
         mensaje['From'] = EMAIL_USER
         mensaje['To'] = email
@@ -146,13 +144,10 @@ def send_confirmation(email, nombre, servicios, user_file_data, user_file_name):
         mensaje.attach(MIMEText(cuerpo, 'plain'))
 
         # Configurar el archivo adjunto correctamente
-        part_user_file = MIMEBase(*mime_type.split("/"))
+        part_user_file = MIMEBase("application", "octet-stream")
         part_user_file.set_payload(user_file_data)
         encoders.encode_base64(part_user_file)
-        part_user_file.add_header(
-            "Content-Disposition",
-            f"attachment; filename={user_file_name}"
-        )
+        part_user_file.add_header("Content-Disposition", f"attachment; filename={user_file_name}")
         mensaje.attach(part_user_file)
 
         # Enviar correo
@@ -161,14 +156,16 @@ def send_confirmation(email, nombre, servicios, user_file_data, user_file_name):
             server.starttls(context=context)
             server.login(EMAIL_USER, EMAIL_PASSWORD)
             server.sendmail(EMAIL_USER, email, mensaje.as_string())
-
         st.success("Correo de confirmación enviado al usuario.")
     except Exception as e:
         st.error(f"Error al enviar confirmación al usuario: {e}")
 
-
 # Añadir logo y título
-st.image("escudo_COLOR.jpg", width=100)
+if os.path.exists("escudo_COLOR.jpg"):
+    st.image("escudo_COLOR.jpg", width=100)
+else:
+    st.warning("Imagen no encontrada: escudo_COLOR.jpg")
+
 st.title("Corrección de Estilo")
 
 # Solicitar información del usuario
@@ -203,21 +200,22 @@ if st.button("Enviar archivo"):
             file_data = uploaded_file.getbuffer()
             file_name = uploaded_file.name
 
-            # Incluir el campo adicional si fue especificado
             if otro_servicio and otro_servicio.strip():
                 servicios_solicitados.append(otro_servicio.strip())
 
-            # Guardar en la base de datos SQLite
             guardar_registro_sqlite(nombre_completo, email, numero_economico, file_name, servicios_solicitados)
-
-            # Enviar confirmación al usuario con el archivo adjunto
             send_confirmation(email, nombre_completo, servicios_solicitados, file_data, file_name)
-
-            # Notificar al administrador con el archivo del usuario
             send_to_admin_with_files(file_data, file_name)
-
-            # Subir base de datos actualizada a GitHub
             subir_base_datos()
 
             st.success("Envío exitoso. Cierre la aplicación.")
+
+# Inicializar configuraciones
+st.write("Iniciando configuración de la base de datos...")
+setup_database()
+st.write("Configuración de la base de datos completada.")
+
+st.write("Descargando base de datos...")
+descargar_base_datos()
+st.write("Descarga de la base de datos completada.")
 
