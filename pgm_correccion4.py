@@ -20,7 +20,7 @@ EMAIL_USER = "abcdf2024dfabc@gmail.com"
 EMAIL_PASSWORD = "hjdd gqaw vvpj hbsy"
 NOTIFICATION_EMAIL = "polanco@unam.mx"
 GITHUB_REPO_URL = "https://api.github.com/repos/polancodf2024/MAESTRO/contents/registro_correccion.sqlite"
-GITHUB_TOKEN = "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"  # Token explícito
+GITHUB_TOKEN = "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"  # Token explícito
 LOCAL_DB_FILE = "registro_correccion.sqlite"
 
 # Descargar base de datos desde GitHub
@@ -47,20 +47,23 @@ def subir_base_datos():
 
         headers = {"Authorization": f"token {GITHUB_TOKEN}"}
 
-        # Obtener SHA
-        response = requests.get(GITHUB_REPO_URL, headers=headers)
-        sha = response.json().get("sha") if response.status_code == 200 else None
+        # Datos para la solicitud
+        data = {
+            "message": "Actualizar base de datos",
+            "content": content,
+            "sha": "ea19036cef322812e9490a30b13e596ab1558d5e"  # SHA obtenido
+        }
 
-        # Subir archivo
-        data = {"message": "Actualizar base de datos", "content": content, "sha": sha}
+        # Solicitud PUT
         response = requests.put(GITHUB_REPO_URL, headers=headers, json=data)
 
         if response.status_code in [200, 201]:
-            st.write("Base de datos subida con éxito.")
+            st.success("Base de datos subida con éxito.")
         else:
             st.error(f"Error al subir la base de datos: {response.status_code} - {response.text}")
     except Exception as e:
         st.error(f"Error inesperado al subir la base de datos: {e}")
+
 
 # Crear base de datos y tabla si no existen
 def setup_database():
