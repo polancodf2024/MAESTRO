@@ -19,8 +19,8 @@ SMTP_PORT = 587
 EMAIL_USER = "abcdf2024dfabc@gmail.com"
 EMAIL_PASSWORD = "hjdd gqaw vvpj hbsy"
 NOTIFICATION_EMAIL = "polanco@unam.mx"
-GITHUB_REPO_URL = "https://api.github.com/repos/usuario/repositorio/contents/registro_correccion.sqlite"
-GITHUB_TOKEN = "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"
+GITHUB_REPO_URL = "https://api.github.com/repos/polancodf2024/MAESTRO/contents/registro_correccion.sqlite"
+GITHUB_TOKEN = "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"
 LOCAL_DB_FILE = "registro_correccion.sqlite"
 
 # Descargar base de datos desde GitHub

@@ -6,8 +6,8 @@ import requests
 import base64
 
 # Configuración de la base de datos y GitHub
-GITHUB_REPO_URL = "https://api.github.com/repos/usuario/repositorio/contents/registro_correccion.sqlite"
-GITHUB_TOKEN = "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"
+GITHUB_REPO_URL = "https://api.github.com/repos/polancodf2024/MAESTRO/contents/registro_correccion.sqlite"
+GITHUB_TOKEN = "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"  # Reemplaza con el token correcto
 DB_FILE = "registro_correccion.sqlite"
 PASSWORD = "Tt5plco5"
 
@@ -17,15 +17,22 @@ def descargar_base_datos():
         headers = {"Authorization": f"token {GITHUB_TOKEN}"}
         response = requests.get(GITHUB_REPO_URL, headers=headers)
         if response.status_code == 200:
-            content = base64.b64decode(response.json()["content"])
-            with open(DB_FILE, "wb") as f:
-                f.write(content)
-            print("Base de datos descargada con éxito desde GitHub.")
+            try:
+                content = base64.b64decode(response.json().get("content", ""))
+                with open(DB_FILE, "wb") as f:
+                    f.write(content)
+                print("Base de datos descargada con éxito desde GitHub.")
+            except Exception as e:
+                st.error(f"Error al procesar la base de datos descargada: {e}")
         else:
-            st.error(f"Error al descargar la base de datos: {response.status_code}")
+            st.error(f"Error al descargar la base de datos: {response.status_code} - {response.text}")
 
 # Subir base de datos actualizada a GitHub
 def subir_base_datos():
+    if not os.path.exists(DB_FILE):
+        st.error("La base de datos local no existe, no se puede subir.")
+        return
+
     with open(DB_FILE, "rb") as f:
         content = base64.b64encode(f.read()).decode("utf-8")
 
@@ -34,11 +41,12 @@ def subir_base_datos():
     # Obtener SHA del archivo existente
     response = requests.get(GITHUB_REPO_URL, headers=headers)
     if response.status_code == 200:
-        sha = response.json()["sha"]
+        sha = response.json().get("sha", None)
     else:
-        sha = None
+        st.error(f"Error al obtener SHA del archivo: {response.status_code} - {response.text}")
+        return
 
-    # Subir archivo
+    # Subir archivo actualizado
     data = {
         "message": "Actualizar base de datos",
         "content": content,
@@ -48,7 +56,7 @@ def subir_base_datos():
     if response.status_code in [200, 201]:
         print("Base de datos subida con éxito a GitHub.")
     else:
-        st.error(f"Error al subir la base de datos: {response.status_code}")
+        st.error(f"Error al subir la base de datos: {response.status_code} - {response.text}")
 
 # Descargar la base de datos al inicio
 descargar_base_datos()
