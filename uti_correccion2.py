@@ -18,13 +18,13 @@ if input_password != PASSWORD:
 st.image("escudo_COLOR.jpg", width=150)
 
 # Título de la aplicación
-st.title("Gestión de Base de Datos: registro_correccion")
+st.title("Gestión de Base de Datos: registro")
 
 # Función para leer datos desde SQLite
 def leer_datos_sqlite():
     try:
         conn = sqlite3.connect(DB_FILE)
-        query = "SELECT * FROM registro_correccion"
+        query = "SELECT * FROM registro"
         df = pd.read_sql_query(query, conn)
         conn.close()
         return df
@@ -38,10 +38,10 @@ def reemplazar_datos_sqlite(df):
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
         # Eliminar los datos existentes
-        cursor.execute("DELETE FROM registro_correccion")
+        cursor.execute("DELETE FROM registro")
 
         # Insertar los nuevos datos
-        df.to_sql("registro_correccion", conn, if_exists="append", index=False)
+        df.to_sql("registro", conn, if_exists="append", index=False)
 
         conn.commit()
         conn.close()
@@ -79,7 +79,7 @@ if not df_actual.empty:
         st.download_button(
             label="Descargar datos como CSV",
             data=df_actual.to_csv(index=False),
-            file_name="registro_correccion.csv",
+            file_name="registro.csv",
             mime="text/csv"
         )
     except Exception as e:
