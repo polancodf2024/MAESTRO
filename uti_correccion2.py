@@ -2,31 +2,9 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 
-# Configuración de la base de datos SQLite
+# Configuración de la base de datos
 DB_FILE = "registro_correccion.sqlite"
 PASSWORD = "Tt5plco5"
-
-# Crear la base de datos y la tabla si no existen
-def setup_database():
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS registro (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        fecha_hora TEXT NOT NULL,
-        nombre TEXT NOT NULL,
-        email TEXT NOT NULL,
-        numero_economico TEXT NOT NULL,
-        file_name TEXT NOT NULL,
-        servicios TEXT NOT NULL,
-        estado TEXT DEFAULT 'Activo',
-        fecha_terminacion TEXT
-    )
-    """)
-    conn.commit()
-    conn.close()
-
-setup_database()
 
 # Solicitar contraseña al inicio
 input_password = st.text_input("Ingresa la contraseña para acceder:", type="password")
@@ -46,7 +24,7 @@ st.title("Gestión de Base de Datos: registro_correccion")
 def leer_datos_sqlite():
     try:
         conn = sqlite3.connect(DB_FILE)
-        query = "SELECT * FROM registro"
+        query = "SELECT * FROM registro_correccion"
         df = pd.read_sql_query(query, conn)
         conn.close()
         return df
@@ -60,10 +38,10 @@ def reemplazar_datos_sqlite(df):
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
         # Eliminar los datos existentes
-        cursor.execute("DELETE FROM registro")
+        cursor.execute("DELETE FROM registro_correccion")
 
         # Insertar los nuevos datos
-        df.to_sql("registro", conn, if_exists="append", index=False)
+        df.to_sql("registro_correccion", conn, if_exists="append", index=False)
 
         conn.commit()
         conn.close()
@@ -71,7 +49,7 @@ def reemplazar_datos_sqlite(df):
     except Exception as e:
         st.error(f"Error al reemplazar los datos: {e}")
 
-# Opción para subir el archivo registro_correccion
+# Opción para subir el archivo de análisis
 st.header("Subir los datos a la base de datos")
 uploaded_csv = st.file_uploader("Selecciona un archivo CSV para cargar en la base de datos", type=["csv"])
 
