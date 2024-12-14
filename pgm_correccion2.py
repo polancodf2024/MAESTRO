@@ -9,6 +9,7 @@ from email import encoders
 import sqlite3
 from datetime import datetime
 import pytz
+import os
 
 # Configuración
 SMTP_SERVER = "smtp.gmail.com"
@@ -16,7 +17,7 @@ SMTP_PORT = 587
 EMAIL_USER = "abcdf2024dfabc@gmail.com"
 EMAIL_PASSWORD = "hjdd gqaw vvpj hbsy"
 NOTIFICATION_EMAIL = "polanco@unam.mx"
-DB_FILE = "registro_correccion.sqlite"
+DB_FILE = os.path.join(os.path.dirname(__file__), "registro_correccion.sqlite")
 
 # Crear base de datos y tabla si no existen
 def setup_database():
@@ -119,7 +120,6 @@ def send_confirmation(email, nombre, servicios, user_file_data, user_file_name):
         st.success("Correo de confirmación enviado al usuario.")
     except Exception as e:
         st.error(f"Error al enviar confirmación al usuario: {e}")
-
 
 
 # Añadir logo y título

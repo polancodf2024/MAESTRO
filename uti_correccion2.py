@@ -1,9 +1,10 @@
 import streamlit as st
 import sqlite3
 import pandas as pd
+import os
 
 # Configuración de la base de datos
-DB_FILE = "registro_correccion.sqlite"
+DB_FILE = os.path.join(os.path.dirname(__file__), "registro_correccion.sqlite")
 PASSWORD = "Tt5plco5"
 
 # Solicitar contraseña al inicio
