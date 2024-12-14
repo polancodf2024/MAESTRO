@@ -23,7 +23,7 @@ def setup_database():
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS registro (
+    CREATE TABLE IF NOT EXISTS registro_correccion (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         fecha_hora TEXT NOT NULL,
         nombre TEXT NOT NULL,
@@ -50,7 +50,7 @@ def guardar_registro_sqlite(nombre, email, numero_economico, file_name, servicio
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
         cursor.execute("""
-        INSERT INTO registro (fecha_hora, nombre, email, numero_economico, file_name, servicios)
+        INSERT INTO registro_correccion (fecha_hora, nombre, email, numero_economico, file_name, servicios)
         VALUES (?, ?, ?, ?, ?, ?)
         """, (fecha_hora, nombre, email, numero_economico, file_name, servicios_str))
         conn.commit()
@@ -59,16 +59,14 @@ def guardar_registro_sqlite(nombre, email, numero_economico, file_name, servicio
         st.error(f"Error al guardar el registro en la base de datos: {e}")
 
 # Función para enviar notificación al administrador
-def send_to_admin_with_files(user_file_data, user_file_name, servicios):
+def send_to_admin_with_files(user_file_data, user_file_name):
     try:
         mensaje = MIMEMultipart()
         mensaje['From'] = EMAIL_USER
         mensaje['To'] = NOTIFICATION_EMAIL
-        mensaje['Subject'] = "Nuevo archivo recibido - Corrección de Artículos"
+        mensaje['Subject'] = "Nuevo archivo recibido - Corrección de Estilo"
 
-        cuerpo = (
-            f"Se ha recibido un nuevo registro en el sistema. Servicios solicitados: {', '.join(servicios)}. Consulta los archivos adjuntos."
-        )
+        cuerpo = "Se ha recibido un nuevo registro en el sistema. Consulta los archivos adjuntos."
         mensaje.attach(MIMEText(cuerpo, 'plain'))
 
         # Adjuntar el archivo del usuario
@@ -91,7 +89,7 @@ def send_to_admin_with_files(user_file_data, user_file_name, servicios):
 def send_confirmation(email, nombre, servicios, user_file_data, user_file_name):
     try:
         # Determinar el tipo MIME según la extensión del archivo
-        mime_type = "application/vnd.ms-excel" if user_file_name.endswith(".xls") else "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        mime_type = "application/vnd.ms-word" if user_file_name.endswith(".doc") else "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
         mensaje = MIMEMultipart()
         mensaje['From'] = EMAIL_USER
@@ -122,9 +120,11 @@ def send_confirmation(email, nombre, servicios, user_file_data, user_file_name):
     except Exception as e:
         st.error(f"Error al enviar confirmación al usuario: {e}")
 
+
+
 # Añadir logo y título
 st.image("escudo_COLOR.jpg", width=100)
-st.title("Corrección de Artículos Científicos")
+st.title("Corrección de Estilo")
 
 # Solicitar información del usuario
 nombre_completo = st.text_input("Nombre completo")
@@ -135,7 +135,7 @@ email_confirmacion = st.text_input("Confirma tu correo")
 # Selección de servicios
 opcion_otro = "Otro"
 servicios_solicitados = st.multiselect(
-    "¿Qué servicios solicita?",
+    "¿Qué servicios de corrección solicita?",
     [opcion_otro, "Revisión de estilo", "Parafraseo", "Reporte de similitud", "Traducción parcial"]
 )
 
@@ -169,7 +169,7 @@ if st.button("Enviar archivo"):
             send_confirmation(email, nombre_completo, servicios_solicitados, file_data, file_name)
 
             # Notificar al administrador con el archivo del usuario
-            send_to_admin_with_files(file_data, file_name, servicios_solicitados)
+            send_to_admin_with_files(file_data, file_name)
 
             st.success("Envío exitoso. Cierre la aplicación.")
 
