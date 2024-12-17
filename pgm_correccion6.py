@@ -66,7 +66,7 @@ email_confirmacion = st.text_input("Confirma tu correo electrónico")
 st.subheader("Opciones de corrección:")
 opciones_correccion = st.multiselect(
     "Selecciona las opciones de corrección que necesitas:",
-    ["Revisión de estilo", "Corrección ortotipográfica", "Corrección gramatical", "Formato APA", "Formato MLA"]
+    ["Verificación de originalidad", "Parafraseo", "Reporte de similitudes", "Factor IA", "Revisión de estilo", "Traducción parcial"]
 )
 
 # Subida del archivo
