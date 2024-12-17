@@ -54,18 +54,26 @@ def send_email_with_attachment(email_recipient, subject, body, attachment_path):
         st.error(f"Error al enviar el correo: {e}")
 
 # Interfaz de Streamlit
-st.title("Subida y Envío de Archivos con Confirmación")
+st.title("Sistema de Corrección de Estilo")
 
 # Solicitar información del usuario
 nombre_completo = st.text_input("Nombre completo del usuario")
+numero_economico = st.text_input("Número económico del usuario")
 email = st.text_input("Correo electrónico del usuario")
 email_confirmacion = st.text_input("Confirma tu correo electrónico")
+
+# Opciones de corrección
+st.subheader("Opciones de corrección:")
+opciones_correccion = st.multiselect(
+    "Selecciona las opciones de corrección que necesitas:",
+    ["Revisión de estilo", "Corrección ortotipográfica", "Corrección gramatical", "Formato APA", "Formato MLA"]
+)
 
 # Subida del archivo
 uploaded_file = st.file_uploader("Sube tu archivo .doc o .docx", type=["doc", "docx"])
 
 if st.button("Enviar archivo"):
-    if not nombre_completo or not email or not email_confirmacion or email != email_confirmacion or not uploaded_file:
+    if not nombre_completo or not numero_economico or not email or not email_confirmacion or email != email_confirmacion or not uploaded_file or not opciones_correccion:
         st.error("Por favor, completa todos los campos y sube un archivo.")
     else:
         with st.spinner("Procesando archivo, por favor espera..."):
@@ -76,14 +84,26 @@ if st.button("Enviar archivo"):
                 with open(file_path, "wb") as f:
                     f.write(uploaded_file.getbuffer())
 
-                # Enviar correo al usuario con el archivo adjunto
+                # Crear cuerpo de correo
+                opciones_seleccionadas = ", ".join(opciones_correccion)
                 user_subject = "Confirmación de recepción de documento"
-                user_body = f"Hola {nombre_completo},\n\nHemos recibido tu documento: {file_name}."
-                send_email_with_attachment(email, user_subject, user_body, file_path)
+                user_body = (
+                    f"Hola {nombre_completo},\n\n"
+                    f"Hemos recibido tu documento: {file_name}.\n"
+                    f"Número económico: {numero_economico}.\n"
+                    f"Opciones de corrección solicitadas: {opciones_seleccionadas}."
+                )
 
-                # Enviar correo al administrador con el archivo adjunto
-                admin_subject = "Nuevo archivo recibido"
-                admin_body = f"Se ha recibido un documento de {nombre_completo} ({email}).\nNombre del archivo: {file_name}."
+                admin_subject = "Nuevo archivo recibido - Sistema de Corrección de Estilo"
+                admin_body = (
+                    f"Se ha recibido un documento de {nombre_completo} ({email}).\n"
+                    f"Número económico: {numero_economico}.\n"
+                    f"Nombre del archivo: {file_name}.\n"
+                    f"Opciones de corrección solicitadas: {opciones_seleccionadas}."
+                )
+
+                # Enviar correos
+                send_email_with_attachment(email, user_subject, user_body, file_path)
                 send_email_with_attachment(NOTIFICATION_EMAIL, admin_subject, admin_body, file_path)
 
                 st.success("Archivo subido y correos enviados correctamente.")
